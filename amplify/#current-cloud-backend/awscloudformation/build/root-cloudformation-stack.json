@@ -1,0 +1,231 @@
+{
+  "Description": "Root Stack for AWS Amplify CLI",
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "DeploymentBucketName": {
+      "Type": "String",
+      "Default": "DeploymentBucket",
+      "Description": "Name of the common deployment bucket provided by the parent stack"
+    },
+    "AuthRoleName": {
+      "Type": "String",
+      "Default": "AuthRoleName",
+      "Description": "Name of the common deployment bucket provided by the parent stack"
+    },
+    "UnauthRoleName": {
+      "Type": "String",
+      "Default": "UnAuthRoleName",
+      "Description": "Name of the common deployment bucket provided by the parent stack"
+    }
+  },
+  "Outputs": {
+    "Region": {
+      "Description": "CloudFormation provider root stack Region",
+      "Value": {
+        "Ref": "AWS::Region"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-Region"
+        }
+      }
+    },
+    "StackName": {
+      "Description": "CloudFormation provider root stack ID",
+      "Value": {
+        "Ref": "AWS::StackName"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-StackName"
+        }
+      }
+    },
+    "StackId": {
+      "Description": "CloudFormation provider root stack name",
+      "Value": {
+        "Ref": "AWS::StackId"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-StackId"
+        }
+      }
+    },
+    "AuthRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "AuthRole",
+          "Arn"
+        ]
+      }
+    },
+    "UnauthRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "UnauthRole",
+          "Arn"
+        ]
+      }
+    },
+    "DeploymentBucketName": {
+      "Description": "CloudFormation provider root stack deployment bucket name",
+      "Value": {
+        "Ref": "DeploymentBucketName"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-DeploymentBucketName"
+        }
+      }
+    },
+    "AuthRoleName": {
+      "Value": {
+        "Ref": "AuthRole"
+      }
+    },
+    "UnauthRoleName": {
+      "Value": {
+        "Ref": "UnauthRole"
+      }
+    }
+  },
+  "Resources": {
+    "DeploymentBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": {
+          "Ref": "DeploymentBucketName"
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        }
+      },
+      "UpdateReplacePolicy": "Retain",
+      "DeletionPolicy": "Retain"
+    },
+    "AuthRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Deny",
+              "Principal": {
+                "Federated": "cognito-identity.amazonaws.com"
+              },
+              "Action": "sts:AssumeRoleWithWebIdentity"
+            }
+          ]
+        },
+        "RoleName": {
+          "Ref": "AuthRoleName"
+        }
+      }
+    },
+    "UnauthRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Deny",
+              "Principal": {
+                "Federated": "cognito-identity.amazonaws.com"
+              },
+              "Action": "sts:AssumeRoleWithWebIdentity"
+            }
+          ]
+        },
+        "RoleName": {
+          "Ref": "UnauthRoleName"
+        }
+      }
+    },
+    "hostingamplifyhosting": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": "https://s3.amazonaws.com/amplify-ecommerce-dev-192639-deployment/amplify-cfn-templates/hosting/amplifyhosting-template.json",
+        "Parameters": {
+          "appId": "d3od77t7409v6n",
+          "type": "manual",
+          "env": "dev"
+        }
+      }
+    },
+    "functionecommercee3d651bf": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": "https://s3.amazonaws.com/amplify-ecommerce-dev-192639-deployment/amplify-cfn-templates/function/ecommercee3d651bf-cloudformation-template.json",
+        "Parameters": {
+          "deploymentBucketName": "amplify-ecommerce-dev-192639-deployment",
+          "s3Key": "amplify-builds/ecommercee3d651bf-4d5437746e6966376e31-build.zip",
+          "env": "dev"
+        }
+      }
+    },
+    "functionecommercec3accf7d": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": "https://s3.amazonaws.com/amplify-ecommerce-dev-192639-deployment/amplify-cfn-templates/function/ecommercec3accf7d-cloudformation-template.json",
+        "Parameters": {
+          "deploymentBucketName": "amplify-ecommerce-dev-192639-deployment",
+          "s3Key": "amplify-builds/ecommercec3accf7d-4c422f4a734c78357265-build.zip",
+          "env": "dev"
+        }
+      }
+    },
+    "apimyapi": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": "https://s3.amazonaws.com/amplify-ecommerce-dev-192639-deployment/amplify-cfn-templates/api/myapi-cloudformation-template.json",
+        "Parameters": {
+          "functionecommercee3d651bfName": {
+            "Fn::GetAtt": [
+              "functionecommercee3d651bf",
+              "Outputs.Name"
+            ]
+          },
+          "functionecommercee3d651bfArn": {
+            "Fn::GetAtt": [
+              "functionecommercee3d651bf",
+              "Outputs.Arn"
+            ]
+          },
+          "env": "dev"
+        }
+      }
+    },
+    "apiapi8dd7efe1": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": "https://s3.amazonaws.com/amplify-ecommerce-dev-192639-deployment/amplify-cfn-templates/api/api8dd7efe1-cloudformation-template.json",
+        "Parameters": {
+          "functionecommercec3accf7dName": {
+            "Fn::GetAtt": [
+              "functionecommercec3accf7d",
+              "Outputs.Name"
+            ]
+          },
+          "functionecommercec3accf7dArn": {
+            "Fn::GetAtt": [
+              "functionecommercec3accf7d",
+              "Outputs.Arn"
+            ]
+          },
+          "env": "dev"
+        }
+      }
+    }
+  }
+}

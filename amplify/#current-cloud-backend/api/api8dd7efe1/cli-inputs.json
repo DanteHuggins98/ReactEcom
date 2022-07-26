@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "paths": {
+    "/productsdb": {
+      "name": "/productsdb",
+      "lambdaFunction": "ecommercec3accf7d",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}
